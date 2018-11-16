@@ -1,0 +1,299 @@
+<html>
+
+<head>
+    <script type="text/javascript" src="eventemitter2.min.js"></script>
+    <script type="text/javascript" src="roslib.min.js"></script>
+    <!--Import Google Icon Font-->
+    <link type="text/css" rel="stylesheet" href="css/material-icons.css" />
+    <!--Import materialize.css-->
+    <link type="text/css" rel="stylesheet" href="css/materialize.min.css" media="screen,projection" />
+    <link rel="stylesheet" href="css/jquery.numpad.css">
+    <link rel="stylesheet" href="css/slider.css">
+    <link rel="stylesheet" href="css/nouislider.css">
+
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!--Import jQuery before materialize.js-->
+    <script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="js/materialize.min.js"></script>
+    <script type="text/javascript" src="js/jquery.numpad.js"></script>
+    <script type="text/javascript" src="js/nouislider.js"></script>
+    <script type="text/javascript" src="js/wNumb.js"></script>
+    <!--Javascript Scripts-->
+    <script type="text/javascript">
+        var ip = '192.168.1.106';
+        var max_speed_value = 200000
+        var slow_speed_value = 150000
+        var max_speed_slider
+        var slow_speed_slider
+        var max_speed_set
+        var slow_speed_set
+        var rbServer = new ROSLIB.Ros();
+        //var rbServer = new ROSLIB.Ros({url : 'ws://192.168.1.106:9090'});
+        console.log('ws://' + ip + ':9090')
+
+
+        $(document).ready(function () {
+            //your code here
+
+            max_speed_slider = document.getElementById("max_slider");
+            console.log(max_speed_slider)
+            noUiSlider.create(max_speed_slider, {
+                start: 100,
+                connect: true,
+                tooltips: true,
+                step: 1,
+                range: {
+                    'min': 0,
+                    'max': 100
+                },
+                pips: {
+                    mode: 'positions',
+                    values: [0, 25, 50, 75, 100],
+                    density: 4,
+                    stepped: true
+                },
+                behaviour: 'tap-drag'
+            });
+            max_speed_slider.noUiSlider.on('change.one', function (values, handle) {
+                console.log(values)
+                max_speed_set = parseInt(values[0])
+            });
+
+            slow_speed_slider = document.getElementById("slow_slider");
+            console.log(slow_speed_slider)
+            noUiSlider.create(slow_speed_slider, {
+                start: 100,
+                connect: true,
+                tooltips: true,
+                step: 1,
+                range: {
+                    'min': 0,
+                    'max': 100
+                },
+                pips: {
+                    mode: 'positions',
+                    values: [0, 25, 50, 75, 100],
+                    density: 4,
+                    stepped: true
+                },
+                behaviour: 'tap-drag'
+            });
+            slow_speed_slider.noUiSlider.on('change.one', function (values, handle) {
+                console.log(values)
+                slow_speed_set = parseInt(values[0])
+            });
+
+            
+        });
+
+        var getParamClient = new ROSLIB.Service({
+            ros: rbServer,
+            name: '/get_param',
+            serviceType: 'agv2/getparamm'
+        });
+
+        // This function is called upon the rosbridge connection event
+        rbServer.on('connection', function () {
+            // Write appropriate message to #feedback div when successfully connected to rosbridge
+            var fbDiv = document.getElementById('feedback');
+            fbDiv.innerHTML += "<p>Connected to websocket server !!!!!!.</p>";
+            image = document.getElementById('imgDisp');
+            image.src = 'http://' + ip + ':8080/stream?topic=/output/image_raw&type=ros_compressed';
+            var request = new ROSLIB.ServiceRequest({
+                words: "slowspeed"
+            });
+            console.log(request);
+            getParamClient.callService(request, function (result) {
+                console.log('Result for service call on ' + result.value);
+                slow_speed_value = result.value
+            });
+            var requestMaxSpeed = new ROSLIB.ServiceRequest({
+                words: "maxspeed"
+            });
+            console.log(request);
+            getParamClient.callService(request, function (result) {
+                console.log('Result for service call on ' + result.value);
+            });
+            getParamClient.callService(requestMaxSpeed, function (result) {
+                console.log('Result for service call on ' + result.value);
+                document.getElementById("max_speed").textContent = result.value
+                max_speed_value = result.value
+            });
+
+
+            document.getElementById("connect").textContent = "Close"
+        });
+
+        // This function is called when there is an error attempting to connect to rosbridge
+        rbServer.on('error', function (error) {
+            // Write appropriate message to #feedback div upon error when attempting to connect to rosbridge
+            var fbDiv = document.getElementById('feedback');
+            fbDiv.innerHTML += "<p>Error connecting to websocket server.</p>";
+        });
+
+        // This function is called when the connection to rosbridge is closed
+        rbServer.on('close', function () {
+            // Write appropriate message to #feedback div upon closing connection to rosbridge
+            var fbDiv = document.getElementById('feedback');
+            fbDiv.innerHTML += "<p>Connection to websocket server closed.</p>";
+            document.getElementById("connect").textContent = "Connect"
+        });
+
+
+
+        // These lines create a topic object as defined by roslibjs
+        var cmdVelTopic = new ROSLIB.Topic({
+            ros: rbServer,
+            name: '/state',
+            messageType: 'std_msgs.msg/Int16'
+        });
+
+        var setMaxSpeedT = new ROSLIB.Topic({
+            ros: rbServer,
+            name: '/max_speed',
+            messageType: 'std_msgs.msg/Int32'
+        });
+
+        setMaxSpeedT.subscribe(function (message) {
+            console.log('Received message on ' + listener.name + ': ' + message.data);
+
+        });
+
+        var setSlowSpeedT = new ROSLIB.Topic({
+            ros: rbServer,
+            name: '/slow_speed',
+            messageType: 'std_msgs.msg/Int32'
+        });
+
+        setSlowSpeedT.subscribe(function (message) {
+            console.log('Received message on ' + listener.name + ': ' + message.data);
+
+        });
+
+
+
+        var cam = new ROSLIB.Message({
+            data: 555555
+        });
+
+        var noline_listener = new ROSLIB.Topic({
+            ros: rbServer,
+            name: '/noline',
+            messageType: 'std_msgs.msg/Int16'
+        });
+
+        noline_listener.subscribe(function (message) {
+            console.log('Received message on ' + listener.name + ': ' + message.data);
+            fbDiv.innerHTML += "<p>noline</p>";
+        });
+
+
+        /* This function:
+        - retrieves numeric values from the text boxes
+        - assigns these values to the appropriate values in the twist message
+        - publishes the message to the cmd_vel topic.
+        */
+
+
+        function wsConnect() {
+
+            // Publish the message 
+
+            if (document.getElementById("connect").value == "OFF") {
+                document.getElementById("connect").value = "ON";
+                rbServer.close();
+
+            } else if (document.getElementById("connect").value == "ON") {
+                document.getElementById("connect").value = "OFF";
+                ip = document.getElementById('rosIp').value
+                rbServer.connect('ws://' + ip + ':9090');
+
+            }
+        }
+
+
+
+        function setMaxSpeed() {
+            console.log('Set max speed ')
+            console.log(max_speed_set)
+            cam.data = max_speed_set * max_speed_value / 100
+            console.log(cam.data)
+            setMaxSpeedT.publish(cam)
+        }
+
+        function setSlowSpeed() {
+            console.log('Set slow speed ')
+            cam.data = slow_speed_set * slow_speed_value / 100
+            console.log(cam.data)
+            setSlowSpeedT.publish(cam)
+        }
+
+        function hideImage() {
+
+            if (document.getElementById("hideImage_").value == "OFF") {
+                document.getElementById("hideImage_").value = "ON";
+                document.getElementById("imgDisp").src = "./preview.png";
+                document.getElementById("hideImage_").textContent = "Show image"
+            } else if (document.getElementById("hideImage_").value == "ON") {
+                document.getElementById("hideImage_").value = "OFF";
+                document.getElementById("imgDisp").src = 'http://' + ip +
+                    ':8080/stream?topic=/output/image_raw&type=ros_compressed';
+                document.getElementById("hideImage_").textContent = "Hide image"
+            }
+
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="row ">
+            <div class="col s7 push-s5">
+                <button class="waves-effect waves-light btn-large" id="connect" type="button" value="ON" onclick="wsConnect()">Connect</button>
+            </div>
+            <div class="col s5 pull-s7">
+                <input id="rosIp" name="rosIp" type="text" value="192.168.1.106" />
+            </div>
+        </div>
+
+        <div class="row center" style="height: 120px;">
+            <div class="col s2">
+                <button class="waves-effect waves-light btn-large" id="hideImage_" type="button" value="ON" onclick="hideImage()">Hide
+                    image</button>
+            </div>
+            <div class="col s9">
+                <img id="imgDisp" style="overflow:hidden" src="" />
+            </div>
+        </div>
+
+        <div class="row " style="height: 120px;">
+            <div class="col s9" id="max_slider"></div>
+            <div class="col s2">
+                <button class="btn waves-effect" id="setMaxSpeed_" type="button" onclick="setMaxSpeed()">maxSpeed</button>
+            </div>
+
+        </div>
+
+        <div class="row " style="height: 120px;">
+                <div class="col s9" id="slow_slider"></div>
+                <div class="col s2">
+                    <button class="btn waves-effect" id="setSlowSpeed_" type="button" onclick="setSlowSpeed()">SlowSpeed</button>
+                </div>
+    
+            </div>
+
+
+
+
+        
+        
+        <div id="feedback" class="row" style="height: 120px;"></div>
+
+    </div>
+</body>
+
+
+</html>
