@@ -85,7 +85,7 @@
                 slow_speed_set = parseInt(values[0])
             });
 
-            
+
         });
 
         var getParamClient = new ROSLIB.Service({
@@ -118,7 +118,6 @@
             });
             getParamClient.callService(requestMaxSpeed, function (result) {
                 console.log('Result for service call on ' + result.value);
-                document.getElementById("max_speed").textContent = result.value
                 max_speed_value = result.value
             });
 
@@ -250,7 +249,7 @@
 <body>
     <div class="container" style="height: 400px; width: 750px">
 
-        <div class="row" style="height: 30px;">
+        <div class="row" style="height: 30px; margin-top: 10px;">
             <div class="col s7 push-s5">
                 <button class="waves-effect waves-light btn-large" id="connect" type="button" value="ON" onclick="wsConnect()">Connect</button>
             </div>
@@ -259,17 +258,21 @@
             </div>
         </div>
 
-        <div class="row center" style="height: 120px;">
-            <div class="col s2">
-                <button class="waves-effect waves-light btn-large" id="hideImage_" type="button" value="ON" onclick="hideImage()">Hide
-                    image</button>
-            </div>
-            <div class="col s9">
-                <img id="imgDisp" style="overflow:hidden" src="" />
+        <div class="row " style="height: 120px;">
+            <div class="col s12  add-height valign-wrapper">
+                <div class="col s9 pull-s1">
+                    <img id="imgDisp" style="margin-left: -20px; overflow:hidden; height: 100px; width: 640px;" src="" />
+                </div>
+                <div class="col s1">
+
+                    <button style="margin-left: -50px" class="btn-floating btn-large" id="hideImage_" type="button" value="ON" onclick="hideImage()">Hide
+                        image</button>
+
+                </div>
             </div>
         </div>
 
-        <div class="row " style="height: 100px;">
+        <div class="row " style="height: 100px; margin-top: 20px;">
             <div class="col s9" id="max_slider"></div>
             <div class="col s2">
                 <button class="btn waves-effect" id="setMaxSpeed_" type="button" onclick="setMaxSpeed()">maxSpeed</button>
@@ -278,14 +281,14 @@
         </div>
 
         <div class="row " style="height: 100px;">
-                <div class="col s9" id="slow_slider"></div>
-                <div class="col s2">
-                    <button class="btn waves-effect" id="setSlowSpeed_" type="button" onclick="setSlowSpeed()">SlowSpeed</button>
-                </div>
-    
+            <div class="col s9" id="slow_slider"></div>
+            <div class="col s2">
+                <button class="btn waves-effect" id="setSlowSpeed_" type="button" onclick="setSlowSpeed()">SlowSpeed</button>
             </div>
 
-        
+        </div>
+
+
         <div id="feedback" class="row" style="height: 30px;"></div>
 
     </div>
