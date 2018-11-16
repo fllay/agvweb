@@ -98,7 +98,7 @@
         rbServer.on('connection', function () {
             // Write appropriate message to #feedback div when successfully connected to rosbridge
             var fbDiv = document.getElementById('feedback');
-            fbDiv.innerHTML += "<p>Connected to websocket server !!!!!!.</p>";
+            fbDiv.innerHTML = "<p>Connected to websocket server !!!!!!.</p>";
             image = document.getElementById('imgDisp');
             image.src = 'http://' + ip + ':8080/stream?topic=/output/image_raw&type=ros_compressed';
             var request = new ROSLIB.ServiceRequest({
@@ -129,14 +129,14 @@
         rbServer.on('error', function (error) {
             // Write appropriate message to #feedback div upon error when attempting to connect to rosbridge
             var fbDiv = document.getElementById('feedback');
-            fbDiv.innerHTML += "<p>Error connecting to websocket server.</p>";
+            fbDiv.innerHTML = "<p>Error connecting to websocket server.</p>";
         });
 
         // This function is called when the connection to rosbridge is closed
         rbServer.on('close', function () {
             // Write appropriate message to #feedback div upon closing connection to rosbridge
             var fbDiv = document.getElementById('feedback');
-            fbDiv.innerHTML += "<p>Connection to websocket server closed.</p>";
+            fbDiv.innerHTML = "<p>Connection to websocket server closed.</p>";
             document.getElementById("connect").textContent = "Connect"
         });
 
